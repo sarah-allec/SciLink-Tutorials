@@ -32,6 +32,10 @@ In the sidebar: paste the API key, tick the code-execution consent checkbox, **S
 - `planning_agent/experimental_data/prowater_icpms.{xlsx,json}` — ICP-MS measurements on produced-water samples.
 - **Sample technoeconomic objective**: "Using the DOE assessment report, the PWS database, and the provided criticality matrix image as context, analyze the ICP-MS results to determine which "measured critical materials show concentrations that might be economically interesting for recovery, considering their market value."
 - **Sample research objective**: "Based on the ICP-MS results and the prior TEA identifying valuable materials, a simple chemical process (like precipitation) to selectively recover the most promising material from the water sample. Use only reagents that are simple commodity chemicals. In your proposal specifically identify a range of conditions for concentrations, ratios, solubilities, or other variable for testing optimal recovery. Put these conditions in a table for a 96 well plate and using an opentrons. The experiment should cover a wide range of conditions which may span into the non-recovery regime, so as to provide the most data. Rather than measure pH estimate required amounts of acid or base. Prefer additional conditions spread over the columns and rows rather than replicate trials. Target a maximum 360 μL total volume, and prefer to use concentrations at most 1M. Provide corresponding Opentrons code."
+- **Advanced**: To connect to an external server via model context protocol (MCP), click on `Tools` and fill out the `MCP Server` section as shown below:
+  - *Transport*: Select stdio   
+  - *Server name*: OpentronsAI
+  - *Command*: npx mcp-remote https://opentrons-opentronsai-mcp-server.hf.space/gradio_api/mcp/ 
 
 **Track 2 — BO**
 - Generate the initial 3×3 grid: `python BOAgent/simulate_spectra.py init --output_dir BOAgent/spectra --grid` — produces 9 UV-Vis spectra over (temperature, pH) plus per-spectrum metadata sidecars.
