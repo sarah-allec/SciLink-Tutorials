@@ -30,7 +30,7 @@ In the sidebar: paste the API key, tick the code-execution consent checkbox, **S
 **Track 1 — planning**
 - `planning_agent/knowledge_folder/` — PFAS criticality matrix, DOE critical-material assessment (PDF), PWS contaminant database.
 - `planning_agent/experimental_data/prowater_icpms.{xlsx,json}` — ICP-MS measurements on produced-water samples.
-
+- Sample technoeconomic objective: "Using the DOE assessment report, the PWS database, and the provided criticality matrix image as context, analyze the ICP-MS results to determine which "measured critical materials show concentrations that might be economically interesting for recovery, considering their market value."
 **Track 2 — BO**
 - Generate the initial 3×3 grid: `python BOAgent/simulate_spectra.py init --output_dir BOAgent/spectra --grid` — produces 9 UV-Vis spectra over (temperature, pH) plus per-spectrum metadata sidecars.
 - After each BO suggestion, append the suggested point: `python BOAgent/simulate_spectra.py run --output_dir BOAgent/spectra --params '{"temperature_C": xx.x, "pH": x.x}'`.
