@@ -5,7 +5,7 @@ Hands-on materials for [SciLink](https://github.com/ziatdinovmax/SciLink), an op
 | # | Folder | Track |
 |---|---|---|
 | 1 | `planning_agent/` | Knowledge-grounded experiment planning (PFAS / critical-materials) |
-| 2 | `BOAgent/` | UV-Vis closed-loop Bayesian optimization |
+| 2 | `bo_agent/` | UV-Vis closed-loop Bayesian optimization |
 | 3 | `analysis_agent/` | Spectroscopy → curve-fit → DFT input generation |
 
 ## Setup
@@ -38,11 +38,13 @@ In the sidebar: paste the API key, tick the code-execution consent checkbox, **S
   - *Command*: npx mcp-remote https://opentrons-opentronsai-mcp-server.hf.space/gradio_api/mcp/ 
 
 **Track 2 — BO**
-- Generate the initial 3×3 grid: `python BOAgent/simulate_spectra.py init --output_dir BOAgent/spectra --grid` — produces 9 UV-Vis spectra over (temperature, pH) plus per-spectrum metadata sidecars.
-- After each BO suggestion, append the suggested point: `python BOAgent/simulate_spectra.py run --output_dir BOAgent/spectra --params '{"temperature_C": xx.x, "pH": x.x}'`.
-- Ground-truth optimum: T ≈ 55 °C, pH ≈ 8.5. Full simulator interface in `BOAgent/README.md`.
+- Generate the initial 3×3 grid: `python bo_agent/simulate_spectra.py init --output_dir bo_agent/spectra --grid` — produces 9 UV-Vis spectra over (temperature, pH) plus per-spectrum metadata sidecars.
+- Upload spectra to ui in a planning session - see `bo_agent/README.md` for full instructions.
+- After each BO suggestion, append the suggested point: `python bo_agent/simulate_spectra.py run --output_dir bo_agent/spectra --params '{"temperature_C": xx.x, "pH": x.x}'`.
+- Ground-truth optimum: T ≈ 55 °C, pH ≈ 8.5.
 
 **Track 3 — analysis**
-- `analysis_agent/data/mos2_pl.csv` (+ `_metadata.json`) — primary demo. Synthetic monolayer MoS₂ photoluminescence (RT). Exercises the full curve-fit → defect identification → DFT-input chain.
-- `analysis_agent/data/raman_silicon.csv` (+ `_metadata.json`) — Si Raman 520 cm⁻¹ peak; simpler single-component fit.
-- `analysis_agent/data/eels_plasmons.{npy,json}` — low-loss EELS hyperspectral data (uses a different analysis agent).
+- Upload the data and metadata for any of the following examples to the ui in an analysis session:
+  - `analysis_agent/data/mos2_pl.csv` (+ `_metadata.json`) — primary demo. Synthetic monolayer MoS₂ photoluminescence (RT). Exercises the full curve-fit → defect identification → DFT-input chain.
+  - `analysis_agent/data/raman_silicon.csv` (+ `_metadata.json`) — Si Raman 520 cm⁻¹ peak; simpler single-component fit.
+  - `analysis_agent/data/eels_plasmons.{npy,json}` — low-loss EELS hyperspectral data (uses a different analysis agent).
