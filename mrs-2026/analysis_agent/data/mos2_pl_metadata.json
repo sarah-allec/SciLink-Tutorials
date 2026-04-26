@@ -1,0 +1,13 @@
+{
+  "sample": "Monolayer MoS2 on SiO2/Si (CVD-grown, as-deposited, no post-growth annealing or chemical treatment)",
+  "technique": "Photoluminescence Spectroscopy",
+  "excitation_wavelength_nm": 532,
+  "laser_power_uW": 50,
+  "integration_time_s": 30,
+  "objective": "100x",
+  "grating_lines_per_mm": 600,
+  "temperature_K": 295,
+  "x_axis": "Wavelength (nm)",
+  "y_axis": "Intensity (counts)",
+  "notes": "Single-flake measurement at the center of a triangular CVD island, spot diameter ~1 um. Sample is as-grown without sulfur-rich annealing or thiol/TFSI surface treatment. Wide spectrometer window (580-820 nm) to capture both excitonic emission and any sub-bandgap features. Background not subtracted; raw spectrometer counts."
+}

@@ -1,0 +1,13 @@
+{
+  "sample": "Silicon wafer",
+  "technique": "Raman Spectroscopy",
+  "excitation_wavelength_nm": 532,
+  "laser_power_mW": 5,
+  "integration_time_s": 10,
+  "objective": "50x",
+  "grating_lines_per_mm": 1800,
+  "temperature_K": 295,
+  "x_axis": "Raman shift (cm\u207b\u00b9)",
+  "y_axis": "Intensity (counts)",
+  "notes": "p-type Si (100), resistivity 1-10 Ohm-cm"
+}

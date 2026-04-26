@@ -1,0 +1,15 @@
+{
+    "material_type": " self-assembled monolayers of fluorine and tin doped indium oxide (FT:IO) nanocrystal arrays",
+    "experiment_type": "electron energy loss spectroscopy",
+    "spatial_info":{
+        "field_of_view_x": 120,
+        "field_of_view_y": 100,
+        "field_of_view_units": "nm"
+    },
+    "energy_range": {
+        "start": 0.2,
+        "end": 1.13,
+        "units": "eV"
+    }
+}
+
