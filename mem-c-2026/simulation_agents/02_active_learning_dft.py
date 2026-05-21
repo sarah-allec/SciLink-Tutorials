@@ -4,8 +4,8 @@ Part 2 — Active-learning DFT screening: pick the next calculation, not all of 
 SciLink has a Bayesian-optimization engine (used by the `plan` agent for experiments)
 and a `simulate` agent that generates DFT calculations. Neither, on its own, is an
 "active-learning over DFT" loop — but you can wire them together, and that is exactly
-the workflow several of you described (Peralta's AL-guided DFT, Kubra's "manage many
-DFT runs"):
+the workflow several of you described (active-learning-guided DFT; managing many
+DFT runs):
 
     seed DFT data ─▶ fit GP surrogate ─▶ propose next config(s)   [BO selector]
          ▲                                          │
@@ -50,7 +50,7 @@ from al_objective import (
     mock_formation_energy, dft_request, true_optimum,
 )
 
-DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "bedrock/anthropic.claude-3-5-sonnet")
+DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "anthropic/claude-opus-4-6")
 
 
 def make_seed_data(n: int, seed: int, noise: float) -> pd.DataFrame:

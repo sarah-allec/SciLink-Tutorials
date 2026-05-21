@@ -15,9 +15,9 @@ hackathon groups:
 | [`bo_agent/`](bo_agent/) | **C — Bayesian Optimization** | `plan` | Drive closed-loop synthesis optimization |
 | [`simulation_agents/`](simulation_agents/) | **D — DFT / Simulation** | `simulate` | Build defect supercells, generate VASP inputs, run an active-learning DFT loop |
 
-> **Heads up for the strongly computational fellows** (Zeiger, Nguyen, Peralta, Kubra, Zhang):
-> even if your group is A or B, the [`simulation_agents/`](simulation_agents/) track is the closest
-> fit to your day-to-day work, so feel free to tackle that one as well.
+> **Heads up if your work is simulation-first:** even if your group is A or B, the
+> [`simulation_agents/`](simulation_agents/) track is the closest fit to day-to-day computational
+> work, so feel free to tackle that one as well.
 
 ## Agenda at a glance
 
@@ -27,38 +27,92 @@ hackathon groups:
 
 ## Setup
 
-Follow `Pre-workshop_instructions.docx` first (VS Code + Miniconda + `requirements.txt`). In short:
+Do these steps **before** the workshop — some downloads are large. The SciLink version and your
+API key are provided on Day 1, so you only need the prerequisites below now.
+
+> ⚠️ Don't install SciLink itself ahead of time — the correct version is handed out on Day 1.
+> The `requirements.txt` here installs only its dependencies.
+
+### 1. Install VS Code
+
+The recommended editor (integrated terminal, Python debugging, Jupyter):
+<https://code.visualstudio.com/download>. Then add the **Python** and **Jupyter** extensions from
+the Extensions sidebar.
+
+### 2. Install Miniconda
+
+A lightweight Python environment manager: <https://docs.anaconda.com/miniconda/install/>. Then
+create the workshop environment:
 
 ```bash
 conda create -n scilink python=3.12 -y
 conda activate scilink
-pip install -r requirements.txt        # the workshop requirements.txt (pins scilink deps)
 ```
 
-### LLM provider / credentials
+### 3. Install dependencies
 
-SciLink routes every model call through [LiteLLM](https://docs.litellm.ai/), so the provider is
-selected by the **model-name prefix** and credentials come from environment variables. The workshop
-distributes **short-lived AWS session tokens** (no personal account needed), so we use AWS Bedrock:
+From the `mem-c-2026/` folder, with the `scilink` env active:
 
 ```bash
-export AWS_ACCESS_KEY_ID=...           # provided on-site
-export AWS_SECRET_ACCESS_KEY=...       # provided on-site
-export AWS_SESSION_TOKEN=...           # provided on-site (expires end of day)
-export AWS_REGION_NAME=us-east-1       # confirm region on-site
-export SCILINK_MODEL="bedrock/<model-id-provided-on-site>"
+pip install -r requirements.txt
 ```
 
-> ⚠️ The exact Bedrock model id and region will be given to you at the start of Day 1. Every script
-> here reads the model from `SCILINK_MODEL` (falling back to a default) so you only set it once.
-> If the organizers instead hand out an internal-proxy key, set `SCILINK_API_KEY=...` and pass
-> `base_url=...` — ask a helper which path your cohort is using.
+💡 Some packages (PyTorch, AtomAI) are large and can take 5–10 minutes — use a stable connection
+and do this before you arrive.
+
+### 4. Docker (optional)
+
+Optional but handy for a reproducible environment:
+<https://www.docker.com/products/docker-desktop/>. Have Docker Desktop running before Day 1
+(a pre-built image will be provided).
+
+### Pre-workshop checklist
+
+- [ ] VS Code installed with the Python extension
+- [ ] Miniconda installed; `scilink` environment created with Python 3.12
+- [ ] `pip install -r requirements.txt` completed without errors
+- [ ] (optional) Docker Desktop installed and running
+- [ ] Bring 1–2 of your own datasets to work with on Day 2
+
+### LLM provider / API key
+
+SciLink routes every model call through [LiteLLM](https://docs.litellm.ai/): set an API key for your
+provider as an environment variable, and choose the model via `SCILINK_MODEL` (the provider is
+inferred from the model-name prefix). You'll be given a key on Day 1. For example, with Anthropic:
+
+```bash
+export ANTHROPIC_API_KEY=...                       # provided on-site
+export SCILINK_MODEL="anthropic/claude-opus-4-6"   # or whichever model you're given
+```
+
+Other providers work the same way — set the matching key and model prefix:
+
+```bash
+export OPENAI_API_KEY=...   ; export SCILINK_MODEL="openai/gpt-4o"
+export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini/gemini-2.5-pro"
+```
+
+Or skip the provider-specific variable entirely: set **`SCILINK_API_KEY`** to a key from *any*
+provider and SciLink uses it as a universal fallback — just pair it with the matching `SCILINK_MODEL`:
+
+```bash
+export SCILINK_API_KEY=...                          # a key from any provider
+export SCILINK_MODEL="anthropic/claude-opus-4-6"    # provider inferred from the prefix
+```
+
+Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
 Quick check that your environment + credentials work:
 
 ```bash
 python -c "from scilink.agents.planning_agents.bo_tools import get_optimizer; print('scilink OK')"
 ```
+
+### Troubleshooting
+
+- **`conda` not found** — close and reopen your terminal after installing Miniconda (on Windows, use the Anaconda Prompt).
+- **`pip install` permission error** — make sure the environment is active: `conda activate scilink`.
+- **PyTorch install is very slow** — normal (~2 GB); use a stable connection and be patient.
 
 ## Running
 

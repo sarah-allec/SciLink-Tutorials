@@ -3,7 +3,7 @@
 > 🚧 **Scaffold — example not built yet.** Planned next; the `simulation_agents/` track is
 > the finished reference for structure/quality.
 
-For **Group A** (Salguero — SEM defects; Riehs — AFM moiré domains; Zeiger — STEM).
+For **Group A** — image analysis (SEM defects, STEM, AFM moiré domains).
 
 SciLink's `analyze` mode ingests image data and runs segmentation / feature extraction
 (denoising, FFT phase mapping, semantic segmentation of atomic- and meso-scale images),

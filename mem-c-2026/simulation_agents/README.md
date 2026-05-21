@@ -30,11 +30,10 @@ simulation_agents/
 
 ## Setup
 
-See [`../README.md`](../README.md) for the conda env and AWS/LiteLLM credentials. Set the
-model once:
+See [`../README.md`](../README.md) for the conda env and API-key setup. Set the model once:
 
 ```bash
-export SCILINK_MODEL="bedrock/<model-id-provided-on-site>"
+export SCILINK_MODEL="anthropic/claude-opus-4-6"   # or whichever model you're given
 ```
 
 The Bayesian-optimization core (`scilink.agents.planning_agents.bo_tools.get_optimizer`)

@@ -3,8 +3,7 @@
 > 🚧 **Scaffold — example not built yet.** Planned next; the `simulation_agents/` track is
 > the finished reference for structure/quality.
 
-For **Group B** (Bacon-Gershman — SQUID; Moeez — SAXS/SANS; Toups — SAXS/UV-Vis/DLS;
-Nguyen — Monte Carlo output).
+For **Group B** — curve fitting (SQUID magnetometry, SAXS/SANS, UV-Vis/DLS, Monte Carlo output).
 
 This uses the same SciLink `analyze` mode as Track A, but on **1-D curves** rather than
 images: the agent proposes a fitting model (via `lmfit`), fits it, and reports parameters

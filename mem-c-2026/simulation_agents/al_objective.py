@@ -2,9 +2,8 @@
 Configuration space and objective for the active-learning DFT screening demo.
 
 We screen point-defect configurations in **In-doped wurtzite ZnO** — a system that
-recurs across the cohort (Feng's In:ZnO synthesis, Moeez's In:ZnO qubits,
-Salguero's ZnO microscopy, Peralta's defect/dopant DFT). The two design variables
-are the kind of thing you would actually sweep in a defect study:
+recurs across the cohort (In:ZnO synthesis, ZnO microscopy, defect/dopant DFT). The two
+design variables are the kind of thing you would actually sweep in a defect study:
 
     x1 = indium substitution level on the Zn sublattice   [at.%]   in [0, 12]
     x2 = oxygen-vacancy concentration                      [at.%]   in [0, 6]

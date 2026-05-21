@@ -3,8 +3,8 @@
 > 🚧 **Scaffold — example not built yet.** Planned next; the `simulation_agents/` track is
 > the finished reference for structure/quality.
 
-For **Group C** (Feng — In:ZnO synthesis; Nam — catalytic-MOF synthesis; Hannah — cluster
-screening; Huynh — superconductor intercalants).
+For **Group C** — Bayesian optimization of synthesis (e.g. doped-oxide and MOF synthesis, cluster
+and intercalant screening).
 
 SciLink's `plan` mode runs closed-loop Bayesian optimization over experimental parameters:
 read your past runs, fit a GP, and recommend the next batch of conditions (the LLM picks the
