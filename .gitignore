@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- SciLink workshop additions ---
+# macOS / OS cruft
+.DS_Store
+
+# SciLink run outputs & session artifacts (regenerable — don't commit)
+*_session_*/
+kb_storage/
+bo_artifacts/
+dft_output/
+al_dft_runs/
+al_history.csv
+convergence.png

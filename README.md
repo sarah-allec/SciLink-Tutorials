@@ -13,6 +13,7 @@ next-experiment selection, all in a single Python environment.
 | Folder | Event | Topics |
 |--------|-------|--------|
 | [`mrs-2026/`](mrs-2026/) | MRS Spring 2026 — MT01 | Knowledge-grounded planning · UV-Vis Bayesian optimization · Spectroscopy analysis → DFT |
+| [`mem-c-2026/`](mem-c-2026/) | MEM-C Seed AI Fellowship | Image analysis · Curve fitting · Bayesian optimization · Active-learning DFT screening |
 <!-- | [`example/`](example/) | — | Description | -->
 
 Each folder is self-contained with its own README, data, and notebooks.
@@ -28,6 +29,7 @@ Each folder is self-contained with its own README, data, and notebooks.
 
 ```bash
 pip install 'scilink[ui]'        # core + browser UI
+pip install 'scilink[sim]'.      # core + simulation extras
 ```
 
 Individual tutorials may list additional dependencies — check their READMEs.
