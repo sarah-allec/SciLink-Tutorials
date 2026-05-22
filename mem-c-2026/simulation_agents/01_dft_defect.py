@@ -26,6 +26,10 @@ import os
 import sys
 
 # Cohort-tailored structure requests. Add your own here on Day 2.
+# TODO (upstream PR): a monolayer-CrPS4 preset was dropped — SciLink's structure agent can't yet
+# reliably extract a monoclinic 2D monolayer from bulk (it diverged and produced a non-stoichiometric,
+# non-sandwiched layer). Revisit once the structure agent handles layered/monoclinic monolayers; until
+# then, build such structures by hand and pass them via --request.
 PRESETS = {
     "zno_in":        "3x3x2 wurtzite ZnO supercell (36 Zn, 36 O), with 2 In atoms substituting Zn",
     "zno_in_ovac":   "3x3x2 wurtzite ZnO supercell (36 Zn, 36 O), with 2 In atoms substituting Zn "
@@ -33,7 +37,6 @@ PRESETS = {
     "zno_n_sub":     "3x3x2 wurtzite ZnO supercell (36 Zn, 36 O), with a single N atom substituting O",
     "mof_yb_node":   "A 1x1x1 conventional cell of a Zr-oxo-cluster MOF node (UiO-66 secondary "
                      "building unit) with one Zr substituted by Yb",   # Yb-doped MOF node
-    "crps4_vac":     "4x4x1 monolayer CrPS4 supercell with a single sulfur vacancy",  # 2D magnet
 }
 
 DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
@@ -76,7 +79,13 @@ def main() -> int:
     result = orch.run_complete_workflow(request)
 
     print("\n--- Workflow summary ---")
-    print(orch.get_summary(result))
+    try:
+        print(orch.get_summary(result))
+    except Exception as e:
+        # SciLink's get_summary can KeyError on some result shapes (e.g. a missing
+        # 'summary' key in the VASP step). The workflow itself already finished above,
+        # so don't let a cosmetic summary crash the run — fall back to the manifest below.
+        print(f"(SciLink summary unavailable: {e})")
 
     manifest = result.get("final_manifest", {})
     if manifest.get("ready_for_vasp"):

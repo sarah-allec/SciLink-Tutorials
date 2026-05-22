@@ -14,8 +14,8 @@ around the actual engine run. This track has two parts:
 
 Both are themed around **In-doped wurtzite ZnO** point defects — a system shared across
 the cohort (In:ZnO synthesis, ZnO microscopy, defect/dopant DFT) — but every request is
-free text, so you can retarget them to your own system in one line (presets for MOF
-nodes and monolayer CrPS₄ are already included).
+free text, so you can retarget them to your own system in one line (a preset for a
+Yb-doped MOF node is also included).
 
 ## Files
 
@@ -47,7 +47,7 @@ describe the structure in **one of two ways** — both feed the same agent, they
 where the text comes from:
 
 - **`--system <name>`** — use a built-in **preset** (vetted, cohort-relevant). Run `--list` to
-  see them: `zno_in`, `zno_in_ovac` (default), `zno_n_sub`, `mof_yb_node`, `crps4_vac`.
+  see them: `zno_in`, `zno_in_ovac` (default), `zno_n_sub`, `mof_yb_node`.
 - **`--request "<text>"`** — supply your **own free-text** description of any structure. If you
   pass both, `--request` wins.
 
