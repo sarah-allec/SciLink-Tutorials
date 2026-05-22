@@ -33,7 +33,7 @@ simulation_agents/
 See [`../README.md`](../README.md) for the conda env and API-key setup. Set the model once:
 
 ```bash
-export SCILINK_MODEL="anthropic/claude-opus-4-6"   # or whichever model you're given
+export SCILINK_MODEL="claude-opus-4-6"   # or whichever model you're given
 ```
 
 The Bayesian-optimization core (`scilink.agents.planning_agents.bo_tools.get_optimizer`)

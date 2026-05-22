@@ -50,7 +50,7 @@ from al_objective import (
     mock_formation_energy, dft_request, true_optimum,
 )
 
-DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "anthropic/claude-opus-4-6")
+DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
 
 
 def make_seed_data(n: int, seed: int, noise: float) -> pd.DataFrame:

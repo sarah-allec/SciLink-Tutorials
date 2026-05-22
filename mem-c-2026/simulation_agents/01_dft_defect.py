@@ -10,7 +10,7 @@ on HPC. This is the "I'm done deciding what to compute, prepare the calculation"
 
 Usage
 -----
-    export SCILINK_MODEL="anthropic/claude-opus-4-6"   # set once (see ../README.md)
+    export SCILINK_MODEL="claude-opus-4-6"   # set once (see ../README.md)
     python 01_dft_defect.py                        # build the default In:ZnO defect
     python 01_dft_defect.py --system zno_in_ovac   # pick a preset
     python 01_dft_defect.py --request "5x5 MoS2 monolayer, 2H, with one S vacancy"
@@ -36,7 +36,7 @@ PRESETS = {
     "crps4_vac":     "4x4x1 monolayer CrPS4 supercell with a single sulfur vacancy",  # 2D magnet
 }
 
-DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "anthropic/claude-opus-4-6")
+DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
 
 
 def main() -> int:

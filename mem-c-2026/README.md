@@ -23,6 +23,7 @@ hackathon groups:
 
 **Day 1** — Setup → *Hello Agent* (call an LLM via API, give it a custom tool) → Overview of SciLink
 → work through the example tracks above.
+
 **Day 2** — Recap → split into Groups A–D and apply SciLink to **your own data** (bring 1–2 datasets).
 
 ## Setup
@@ -47,6 +48,7 @@ create the workshop environment:
 ```bash
 conda create -n scilink python=3.12 -y
 conda activate scilink
+pip install 'scilink[sim]' # or pip install 'scilink[sim,ui]' to use the ui
 ```
 
 ### 3. Install dependencies
@@ -78,18 +80,19 @@ Optional but handy for a reproducible environment:
 
 SciLink routes every model call through [LiteLLM](https://docs.litellm.ai/): set an API key for your
 provider as an environment variable, and choose the model via `SCILINK_MODEL` (the provider is
-inferred from the model-name prefix). You'll be given a key on Day 1. For example, with Anthropic:
+inferred from the model name, so Claude / GPT / Gemini work as bare names). You'll be given a key
+on Day 1. For example, with Anthropic:
 
 ```bash
 export ANTHROPIC_API_KEY=...                       # provided on-site
-export SCILINK_MODEL="anthropic/claude-opus-4-6"   # or whichever model you're given
+export SCILINK_MODEL="claude-opus-4-6"   # or whichever model you're given
 ```
 
-Other providers work the same way — set the matching key and model prefix:
+Other providers work the same way — set the matching key and model name:
 
 ```bash
-export OPENAI_API_KEY=...   ; export SCILINK_MODEL="openai/gpt-4o"
-export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini/gemini-2.5-pro"
+export OPENAI_API_KEY=...   ; export SCILINK_MODEL="gpt-4o"
+export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 ```
 
 Or skip the provider-specific variable entirely: set **`SCILINK_API_KEY`** to a key from *any*
@@ -97,8 +100,11 @@ provider and SciLink uses it as a universal fallback — just pair it with the m
 
 ```bash
 export SCILINK_API_KEY=...                          # a key from any provider
-export SCILINK_MODEL="anthropic/claude-opus-4-6"    # provider inferred from the prefix
+export SCILINK_MODEL="claude-opus-4-6"             # provider inferred from the model name
 ```
+
+> Only models SciLink can't auto-detect (e.g. Mistral, Cohere, Ollama, Azure, or an
+> OpenAI-compatible proxy) need an explicit `provider/model` prefix like `mistral/mistral-large`.
 
 Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
