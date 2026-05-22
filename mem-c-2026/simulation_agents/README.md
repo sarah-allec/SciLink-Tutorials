@@ -57,7 +57,8 @@ python 01_dft_defect.py --system zno_in_ovac   # a preset: In:ZnO with an O vaca
 python 01_dft_defect.py --request "5x5 MoS2 monolayer, 2H phase, with one S vacancy"
 ```
 
-Either way it writes `POSCAR`/`INCAR`/`KPOINTS` into `dft_output/` (change with `--output-dir`).
+Either way it writes `POSCAR`/`INCAR`/`KPOINTS` into `dft_output/<system-or-request>/` — each run
+gets its own folder so different systems don't overwrite each other (override with `--output-dir`).
 The agent builds the structure with an ASE script, validates it, and auto-refines if the script
 errors (up to `--max-cycles`). You then run VASP on HPC.
 
