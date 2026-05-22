@@ -42,15 +42,27 @@ first thing to run on Day 1.
 
 ## Part 1 — generate a calculation
 
+`01_dft_defect.py` turns a natural-language description of a structure into VASP inputs. You
+describe the structure in **one of two ways** — both feed the same agent, they just differ in
+where the text comes from:
+
+- **`--system <name>`** — use a built-in **preset** (vetted, cohort-relevant). Run `--list` to
+  see them: `zno_in`, `zno_in_ovac` (default), `zno_n_sub`, `mof_yb_node`, `crps4_vac`.
+- **`--request "<text>"`** — supply your **own free-text** description of any structure. If you
+  pass both, `--request` wins.
+
 ```bash
-python 01_dft_defect.py --list                 # see the preset systems
-python 01_dft_defect.py --system zno_in_ovac   # In:ZnO with an O vacancy
-python 01_dft_defect.py --request "4x4x1 monolayer CrPS4 with one S vacancy"
+python 01_dft_defect.py --list                 # show the preset systems
+python 01_dft_defect.py --system zno_in_ovac   # a preset: In:ZnO with an O vacancy
+python 01_dft_defect.py --request "5x5 MoS2 monolayer, 2H phase, with one S vacancy"
 ```
 
-Writes `POSCAR`/`INCAR`/`KPOINTS` into `dft_output/`. The agent builds the structure with
-an ASE script, validates it, and auto-refines if the script errors (up to `--max-cycles`).
-You then run VASP on HPC.
+Either way it writes `POSCAR`/`INCAR`/`KPOINTS` into `dft_output/` (change with `--output-dir`).
+The agent builds the structure with an ASE script, validates it, and auto-refines if the script
+errors (up to `--max-cycles`). You then run VASP on HPC.
+
+> 💡 On Day 2, the quickest path to your own system is `--request "..."`; if you'll reuse it,
+> add a named entry to the `PRESETS` dict at the top of `01_dft_defect.py`.
 
 ## Part 2 — active-learning DFT screening
 
