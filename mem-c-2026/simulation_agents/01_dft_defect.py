@@ -17,8 +17,9 @@ Usage
     python 01_dft_defect.py --list                 # show all presets
 
 The presets are seeded from the cohort's systems; swap in your own on Day 2.
-Each run writes to its own dft_output/<system-or-request>/ folder by default, so
-different systems don't overwrite each other (override with --output-dir).
+Each run writes to a timestamped folder dft_output/<system-or-request>/<timestamp>/ by
+default, so every run is preserved — handy for model comparisons and variability tests
+(override the whole path with --output-dir).
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ import argparse
 import os
 import re
 import sys
+from datetime import datetime
 
 # Cohort-tailored structure requests. Add your own here on Day 2.
 # TODO (upstream PR): a monolayer-CrPS4 preset was dropped — SciLink's structure agent can't yet
@@ -72,12 +74,14 @@ def main() -> int:
 
     request = args.request or PRESETS[args.system]
 
-    # Give each system/request its own subdirectory so runs don't overwrite each other.
+    # Each run nests under the system/request dir in a timestamped folder, so repeated
+    # runs are all preserved (handy for model comparisons / variability tests).
     if args.output_dir:
         out_dir = args.output_dir
     else:
         name = _slugify(args.request) if args.request else args.system
-        out_dir = os.path.join("dft_output", name)
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = os.path.join("dft_output", name, stamp)
 
     # Imported here so --list / --help work without scilink installed.
     from scilink.agents.sim_agents.dft_orchestrator import DFTOrchestrator
