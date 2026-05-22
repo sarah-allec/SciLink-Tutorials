@@ -29,7 +29,7 @@ Each folder is self-contained with its own README, data, and notebooks.
 
 ```bash
 pip install 'scilink[ui]'        # core + browser UI
-pip install 'scilink[sim]'.      # core + simulation extras
+pip install 'scilink[sim]'      # core + simulation extras
 ```
 
 Individual tutorials may list additional dependencies — check their READMEs.
