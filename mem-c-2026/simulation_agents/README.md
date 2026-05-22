@@ -59,7 +59,8 @@ python 01_dft_defect.py --request "5x5 MoS2 monolayer, 2H phase, with one S vaca
 
 Either way it writes `POSCAR`/`INCAR`/`KPOINTS` into a timestamped folder
 `dft_output/<system-or-request>/<YYYYMMDD_HHMMSS>/`, so every run is preserved — handy for model
-comparisons and variability tests. Override the path entirely with `--output-dir`.
+comparisons and variability tests. Override the path entirely with `--output-dir`. Each run folder
+also gets an `llm_trace.jsonl` — every LLM call (model, prompt, response, token usage, latency).
 The agent builds the structure with an ASE script, validates it, and auto-refines if the script
 errors (up to `--max-cycles`). You then run VASP on HPC.
 

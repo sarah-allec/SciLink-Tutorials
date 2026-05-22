@@ -85,6 +85,8 @@ def main() -> int:
 
     # Imported here so --list / --help work without scilink installed.
     from scilink.agents.sim_agents.dft_orchestrator import DFTOrchestrator
+    import scilink
+    scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))  # trace LLM calls into the run dir
 
     print(f"Model        : {args.model}")
     print(f"Output dir   : {out_dir}")
