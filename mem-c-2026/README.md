@@ -21,7 +21,7 @@ hackathon groups:
 
 ## Agenda at a glance
 
-**Day 1** — Setup → *Hello Agent* (call an LLM via API, give it a custom tool) → Overview of SciLink
+**Day 1** — Setup → [*LLM Agents 101*](../llm-agents-101/aws-bedrock/)  → Overview of SciLink
 → work through the example tracks above.
 
 **Day 2** — Recap → split into Groups A–D and apply SciLink to **your own data** (bring 1–2 datasets).
