@@ -41,6 +41,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -82,7 +83,7 @@ def propose_next(df: pd.DataFrame, batch: int) -> list[list[float]]:
     return optimizer.recommend(n_candidates=batch, strategy="log_ei", params={})
 
 
-def evaluate_with_dft(x: list[float], model: str, run_idx: int) -> None:
+def evaluate_with_dft(x: list[float], model: str, run_idx: int, campaign_dir: str) -> None:
     """Generate real VASP inputs for a proposed configuration (no energy returned).
 
     This is the integration point with the simulate agent. It writes a ready-to-run
@@ -93,7 +94,7 @@ def evaluate_with_dft(x: list[float], model: str, run_idx: int) -> None:
     from scilink.agents.sim_agents.dft_orchestrator import DFTOrchestrator
 
     request = dft_request(*x)
-    out = os.path.join("al_dft_runs", f"cfg_{run_idx:02d}")
+    out = os.path.join(campaign_dir, f"cfg_{run_idx:02d}")
     print(f"    → generating VASP inputs in {out}/  ({request})")
     orch = DFTOrchestrator(generator_model=model, validator_model=model,
                            output_dir=out, max_refinement_cycles=3)
@@ -115,6 +116,17 @@ def main() -> int:
     ap.add_argument("--out", default="al_history.csv", help="Where to write the run history.")
     args = ap.parse_args()
 
+    # In --dft mode, each AL campaign gets its own timestamped subdir under al_dft_runs/
+    # so re-runs don't overwrite each other, and the per-campaign LLM trace lives alongside.
+    campaign_dir = None
+    if args.dft:
+        campaign_dir = os.path.join("al_dft_runs", datetime.now().strftime("%Y%m%d_%H%M%S"))
+        os.makedirs(campaign_dir, exist_ok=True)
+        import scilink
+        if hasattr(scilink, "enable_tracing"):
+            scilink.enable_tracing(os.path.join(campaign_dir, "llm_trace.jsonl"))
+        print(f"AL DFT inputs + LLM trace: {campaign_dir}/")
+
     df = make_seed_data(args.seed_points, args.seed, args.noise)
     best0 = df[TARGET_COL].min()
     print(f"Seeded with {len(df)} random DFT points. Best formation energy so far: {best0:.3f} eV\n")
@@ -128,7 +140,7 @@ def main() -> int:
         for x in candidates:
             x = [float(v) for v in x]
             if args.dft:
-                evaluate_with_dft(x, args.model, run_idx)
+                evaluate_with_dft(x, args.model, run_idx, campaign_dir)
             energy = mock_formation_energy(*x, noise=args.noise, rng=rng)
             df = pd.concat([df, pd.DataFrame([{**dict(zip(INPUT_COLS, x)), TARGET_COL: energy}])],
                            ignore_index=True)

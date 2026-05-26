@@ -5,17 +5,18 @@ For **Group D** and any of the strongly computational fellows
 
 SciLink's `simulate` mode turns a natural-language description of a material into a
 built, validated structure and ready-to-run VASP inputs, with a self-refinement loop
-around the actual engine run. This track has two parts:
+around the actual engine run. This track has three parts:
 
 | Script | What it shows | Needs |
 |---|---|---|
 | `01_dft_defect.py` | One agent call: defect description → structure → **VASP inputs** | credentials; **no cluster** |
 | `02_active_learning_dft.py` | An **active-learning loop** that uses a GP surrogate to choose which DFT calc to run next | runs offline in `--mock`; credentials only for `--dft` |
+| `03_qe_inputs.py` | Same idea as Part 1 but for **Quantum ESPRESSO** (`pw.x`) — for fellows without VASP access | credentials; **no cluster** |
 
-Both are themed around **In-doped wurtzite ZnO** point defects — a system shared across
-the cohort (In:ZnO synthesis, ZnO microscopy, defect/dopant DFT) — but every request is
-free text, so you can retarget them to your own system in one line (a preset for a
-Yb-doped MOF node is also included).
+All three are themed around **In-doped wurtzite ZnO** point defects — a system shared
+across the cohort (In:ZnO synthesis, ZnO microscopy, defect/dopant DFT) — but every
+request is free text, so you can retarget them to your own system in one line (a preset
+for a Yb-doped MOF node is also included).
 
 ## Files
 
@@ -23,6 +24,7 @@ Yb-doped MOF node is also included).
 simulation_agents/
 ├── 01_dft_defect.py          # Part 1 — single structure → VASP inputs
 ├── 02_active_learning_dft.py # Part 2 — BO-driven DFT screening loop
+├── 03_qe_inputs.py           # Part 3 — Quantum ESPRESSO companion to Part 1
 ├── al_objective.py           # design space + (mock) formation-energy surface
 └── data/
     └── seed_configs.csv       # 8 example "DFT" points to start the surrogate
@@ -84,7 +86,26 @@ python 02_active_learning_dft.py --dft --iters 4     # also emits real VASP inpu
 synthetic surface (`al_objective.mock_formation_energy`) so you can watch the loop converge
 immediately. To make it real, run the VASP inputs that `--dft` generates, parse the relaxed
 energies, compute the formation energy, and feed that back in place of the mock value — the
-hook is marked in `evaluate_with_dft()`.
+hook is marked in `evaluate_with_dft()`. In `--dft` mode each campaign writes into a
+timestamped `al_dft_runs/<YYYYMMDD_HHMMSS>/` so re-runs don't overwrite each other, with a
+per-campaign `llm_trace.jsonl` alongside.
+
+## Part 3 — Quantum ESPRESSO companion
+
+`03_qe_inputs.py` is the same idea as Part 1, but it emits Quantum ESPRESSO (`pw.x`) inputs
+instead of VASP — for fellows whose group uses QE or has no VASP license. Structure generation
+is engine-agnostic, so reuse a POSCAR produced by Part 1 (or any POSCAR / CIF / xyz) and this
+script wraps it through SciLink's `periodic_dft` agent with the `qe` skill bundle.
+
+```bash
+python 03_qe_inputs.py --structure dft_output/zno_in_ovac/<timestamp>/POSCAR
+python 03_qe_inputs.py --structure my.cif --request "vc-relax of a metal, PBE"
+```
+
+Writes a `pw.in` into `qe_output/<structure>/<timestamp>/`. Set your `pseudo_dir` and the
+`ATOMIC_SPECIES` UPF paths for your pseudopotential library before running `pw.x`.
+
+> Requires SciLink ≥ 0.0.31 (the `qe` skill bundle was added via PR #198).
 
 ## Make it yours (Day 2)
 

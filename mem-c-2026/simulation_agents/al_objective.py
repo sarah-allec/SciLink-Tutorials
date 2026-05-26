@@ -53,7 +53,6 @@ def mock_formation_energy(in_at_pct: float, ovac_at_pct: float, noise: float = 0
         + 0.040 * (in_at_pct - 6.0) ** 2
         + 0.090 * (ovac_at_pct - 2.0) ** 2
         - 0.150 * np.sin(0.5 * in_at_pct)
-        + 0.020 * in_at_pct * ovac_at_pct * 0.0  # placeholder for an interaction term
     )
     if noise:
         rng = rng or np.random.default_rng()
