@@ -55,8 +55,7 @@ def main() -> int:
 
     from scilink.agents.sim_agents.periodic_dft_agent import PeriodicDFTAgent
     import scilink
-    if hasattr(scilink, "enable_tracing"):
-        scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))  # trace the LLM call
+    scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))  # trace the LLM call
 
     print(f"Model       : {args.model}")
     print(f"Structure   : {args.structure}")

@@ -123,8 +123,7 @@ def main() -> int:
         campaign_dir = os.path.join("al_dft_runs", datetime.now().strftime("%Y%m%d_%H%M%S"))
         os.makedirs(campaign_dir, exist_ok=True)
         import scilink
-        if hasattr(scilink, "enable_tracing"):
-            scilink.enable_tracing(os.path.join(campaign_dir, "llm_trace.jsonl"))
+        scilink.enable_tracing(os.path.join(campaign_dir, "llm_trace.jsonl"))
         print(f"AL DFT inputs + LLM trace: {campaign_dir}/")
 
     df = make_seed_data(args.seed_points, args.seed, args.noise)

@@ -93,16 +93,9 @@ def main() -> int:
         HERE, "curve_output", label, datetime.now().strftime("%Y%m%d_%H%M%S"))
     os.makedirs(out_dir, exist_ok=True)
 
-    # The analysis (curve-fitting / image) agents look for ANTHROPIC_API_KEY specifically;
-    # unlike the simulation agents they don't fall back to SCILINK_API_KEY. Bridge it so the
-    # example works with whichever the workshop env has set (the key value is the same).
-    if not os.environ.get("ANTHROPIC_API_KEY") and os.environ.get("SCILINK_API_KEY"):
-        os.environ["ANTHROPIC_API_KEY"] = os.environ["SCILINK_API_KEY"]
-
     # Opt-in JSONL trace of every LLM call (model, prompt, response, tokens, latency).
     import scilink
-    if hasattr(scilink, "enable_tracing"):
-        scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
+    scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
     from scilink.agents.exp_agents.curve_fitting_agent import CurveFittingAgent
 
     print(f"\n📈 Curve fitting: {label}")

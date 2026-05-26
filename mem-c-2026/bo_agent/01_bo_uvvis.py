@@ -96,12 +96,6 @@ def main() -> int:
         HERE, "bo_output", datetime.now().strftime("%Y%m%d_%H%M%S"))
     os.makedirs(out_dir, exist_ok=True)
 
-    # The experiment agents (analysis / hyperspectral) look for ANTHROPIC_API_KEY specifically;
-    # the planning agents (BOAgent) also accept SCILINK_API_KEY, but we bridge so the example
-    # runs no matter which one the workshop env has set. The key value is the same.
-    if not os.environ.get("ANTHROPIC_API_KEY") and os.environ.get("SCILINK_API_KEY"):
-        os.environ["ANTHROPIC_API_KEY"] = os.environ["SCILINK_API_KEY"]
-
     # 1. Scalarize the spectra into a tidy table (rows = experiments, cols = inputs + target).
     print(f"\n🧪 Reading spectra from: {spectra_dir}")
     table = scalarize_spectra(spectra_dir, conditions_path)
@@ -116,8 +110,7 @@ def main() -> int:
 
     # 2. Opt-in JSONL trace of every LLM call (model, prompt, response, tokens, latency).
     import scilink
-    if hasattr(scilink, "enable_tracing"):
-        scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
+    scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
     from scilink.agents.planning_agents.bo_agent import BOAgent
 
     # 3. Hand the table to BOAgent and ask for the next batch of conditions.
