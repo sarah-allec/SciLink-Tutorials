@@ -229,3 +229,8 @@ dft_output/
 al_dft_runs/
 al_history.csv
 convergence.png
+# Per-track example output dirs (timestamped run artifacts)
+curve_output/
+image_output/
+bo_output/
+qe_output/
