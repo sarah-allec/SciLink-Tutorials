@@ -17,6 +17,8 @@ python 01_image_analysis.py --data my.npy --info "..."  # your own image
 python 01_image_analysis.py --list                    # list demo images
 ```
 
+> **Alternative interactive flow:** `scilink analyze --data data/polycrystalline.npy --metadata data/polycrystalline.json` — uses the higher-level orchestrator with a chat shell (same underlying agent + one extra routing LLM call upfront).
+
 ## What you get
 
 A timestamped folder under `image_output/<dataset>/<timestamp>/` containing:
