@@ -13,10 +13,9 @@ phases — without writing a custom segmentation pipeline" shape.
 Usage
 -----
     export SCILINK_MODEL="claude-opus-4-6"        # set once (see ../README.md)
-    python 01_image_analysis.py                          # default: mos2_stem
-    python 01_image_analysis.py --dataset polycrystalline
+    python 01_image_analysis.py                          # the bundled polycrystalline demo
     python 01_image_analysis.py --data my.npy --info "..."  # your own image
-    python 01_image_analysis.py --list                   # show the demo preset options
+    python 01_image_analysis.py --list                   # list the demo presets
 """
 
 from __future__ import annotations
@@ -37,12 +36,10 @@ DATA = os.path.join(HERE, "data")
 # Demo images. Each entry maps a short name to (image file, metadata JSON). The JSON
 # sidecar describes the sample (material, technique, field-of-view, ...) and is passed
 # to the agent as `system_info` — it materially helps the agent plan + interpret.
-#   mos2_stem       — 1% V-doped MoS2 monolayer, HAADF-STEM, 9x9 nm FOV. Atomic-resolution:
-#                     the agent should identify atomic columns, dopants, and S vacancies.
-#   polycrystalline — 304 stainless steel, optical bright-field, 100x100 µm. No specific
-#                     goal needed — the agent picks the analysis (grain segmentation).
+#   polycrystalline — 304 stainless steel, optical bright-field, 100x100 µm. A general-
+#                     purpose microstructure example: no specific goal needed, the agent
+#                     picks the analysis (grain segmentation + size statistics).
 PRESETS = {
-    "mos2_stem":       (os.path.join(DATA, "mos2_stem.npy"),       os.path.join(DATA, "mos2_stem.json")),
     "polycrystalline": (os.path.join(DATA, "polycrystalline.npy"), os.path.join(DATA, "polycrystalline.json")),
 }
 
@@ -62,8 +59,8 @@ def _trunc(s: str, n: int) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--dataset", choices=sorted(PRESETS), default="mos2_stem",
-                    help="Named demo image (default: mos2_stem).")
+    ap.add_argument("--dataset", choices=sorted(PRESETS), default="polycrystalline",
+                    help="Named demo image (default: polycrystalline).")
     ap.add_argument("--data", default=None,
                     help="Path to your own image (.npy/.png/.tif); overrides --dataset.")
     ap.add_argument("--info", default=None,
