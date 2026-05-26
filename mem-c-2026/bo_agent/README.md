@@ -17,7 +17,7 @@ python 01_bo_uvvis.py --batch-size 3 --budget 5
 python 01_bo_uvvis.py --spectra ./my_runs --conditions ./my_runs/conditions.json
 ```
 
-> **Alternative interactive flow:** `scilink plan --autonomy autopilot --data-dir ../../mrs-2026/bo_agent/spectra` — uses the higher-level planning orchestrator with a chat shell (handles scalarization + BO + can chain knowledge queries on top, so it does more than this script).
+> **Alternative interactive flow:** `scilink plan --autonomy autopilot --data-dir ../../data/bo_uvvis/spectra` — uses the higher-level planning orchestrator with a chat shell (handles scalarization + BO + can chain knowledge queries on top, so it does more than this script).
 
 ## What you get
 
@@ -34,7 +34,7 @@ A timestamped folder under `bo_output/<timestamp>/` containing:
 
 ## How the demo works
 
-The default starter grid lives in `../../mrs-2026/bo_agent/spectra/` — 9 simulated
+The default starter grid lives in `../../data/bo_uvvis/spectra/` — 9 simulated
 UV-Vis spectra over a 3×3 (temperature, pH) grid. The script scalarizes each
 spectrum to its peak absorbance and hands the `(T, pH) → peak` table to `BOAgent`.
 Ground-truth optimum is in the interior at **T ≈ 55 °C, pH ≈ 8.5**, and from this
@@ -44,8 +44,8 @@ To **close the loop**, generate spectra for the recommended conditions with the 
 simulator and re-run — the agent reads the appended rows and picks up the campaign:
 
 ```bash
-python ../../mrs-2026/bo_agent/simulate_spectra.py run \
-    --output_dir ../../mrs-2026/bo_agent/spectra \
+python ../../data/bo_uvvis/simulate_spectra.py run \
+    --output_dir ../../data/bo_uvvis/spectra \
     --params '{"temperature_C": 55.0, "pH": 8.5}'
 python 01_bo_uvvis.py                          # re-run; uses the larger grid
 ```

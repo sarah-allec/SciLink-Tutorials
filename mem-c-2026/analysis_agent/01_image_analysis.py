@@ -31,7 +31,7 @@ import scilink
 from scilink.agents.exp_agents.image_analysis_agent import ImageAnalysisAgent
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "data")
+DATA = os.path.normpath(os.path.join(HERE, "..", "..", "data", "images"))
 
 # Demo images. Each entry maps a short name to (image file, metadata JSON). The JSON
 # sidecar describes the sample (material, technique, field-of-view, ...) and is passed

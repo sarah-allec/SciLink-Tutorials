@@ -17,7 +17,7 @@ python 01_image_analysis.py --data my.npy --info "..."  # your own image
 python 01_image_analysis.py --list                    # list demo images
 ```
 
-> **Alternative interactive flow:** `scilink analyze --data data/polycrystalline.npy --metadata data/polycrystalline.json` — uses the higher-level orchestrator with a chat shell (same underlying agent + one extra routing LLM call upfront).
+> **Alternative interactive flow:** `scilink analyze --data ../../data/images/polycrystalline.npy --metadata ../../data/images/polycrystalline.json` — uses the higher-level orchestrator with a chat shell (same underlying agent + one extra routing LLM call upfront).
 
 ## What you get
 
@@ -41,5 +41,5 @@ A timestamped folder under `image_output/<dataset>/<timestamp>/` containing:
 
 1–2 of your own images (SEM/STEM/AFM/optical) as `.npy` / `.png` / `.tif`, plus a
 small JSON sidecar with `material_type`, `experiment_type`, and `spatial_info`
-(field of view + units) — see `data/polycrystalline.json` for the shape. Either
+(field of view + units) — see `../../data/images/polycrystalline.json` for the shape. Either
 point `--data my.npy --info my.json` at them, or add a new entry to `PRESETS`.

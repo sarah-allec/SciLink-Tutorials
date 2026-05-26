@@ -7,22 +7,12 @@ surrogate via SciLink's BOAgent, and recommends the next batch of conditions to
 try. The agent picks the kernel / acquisition / noise strategy and writes
 `bo_artifacts/batch_step_N.csv` with the recommended next experiments.
 
-This mirrors the mrs-2026 BO demo programmatically (no UI). The mrs `bo_agent/`
-folder provides a 3x3 (T, pH) starter grid of synthetic spectra; close the loop
-by generating new spectra for the recommended conditions with that folder's
-`simulate_spectra.py` and re-running this script — the agent picks up where it
-left off via the persisted history file.
-
 Usage
 -----
     export SCILINK_MODEL="claude-opus-4-6"        # set once (see ../README.md)
     python 01_bo_uvvis.py                          # default: mrs starter grid
     python 01_bo_uvvis.py --batch-size 3 --budget 5
     python 01_bo_uvvis.py --spectra ./my_runs --conditions ./my_runs/conditions.json
-
-Group C domains: doped-oxide / MOF synthesis, intercalant screening, cluster
-optimization — same engine, different (inputs, target). Bring on Day 2 a CSV
-of your own experiments and the parameter ranges you can actually access.
 """
 
 from __future__ import annotations
@@ -36,13 +26,15 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+import scilink
+from scilink.agents.planning_agents.bo_agent import BOAgent
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-# Default to the mrs UV-Vis starter grid (3x3 over T, pH) — same data, programmatic flow.
-DEFAULT_SPECTRA = os.path.normpath(os.path.join(HERE, "..", "..", "mrs-2026", "bo_agent", "spectra"))
+# Default to the bundled UV-Vis starter grid (3x3 over T, pH).
+DEFAULT_SPECTRA = os.path.normpath(os.path.join(HERE, "..", "..", "data", "bo_uvvis", "spectra"))
 DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
 
-# Synthesis-parameter bounds (mirrors mrs simulate_spectra.py). Edit on Day 2 to match
-# the conditions you can actually run.
+# Synthesis-parameter bounds (mirrors data/bo_uvvis/simulate_spectra.py).
 INPUT_BOUNDS = {"temperature_C": (5.0, 100.0), "pH": (1.0, 14.0)}
 
 
@@ -109,9 +101,7 @@ def main() -> int:
     print(f"   tidy table: {data_csv}")
 
     # 2. Opt-in JSONL trace of every LLM call (model, prompt, response, tokens, latency).
-    import scilink
     scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
-    from scilink.agents.planning_agents.bo_agent import BOAgent
 
     # 3. Hand the table to BOAgent and ask for the next batch of conditions.
     inputs = list(INPUT_BOUNDS)                       # ['temperature_C', 'pH']
@@ -156,7 +146,7 @@ def main() -> int:
     print("\nNext step: generate spectra for these recommendations and re-run, e.g.")
     if recs:
         params_json = json.dumps(recs[0])
-        print(f"  python ../../mrs-2026/bo_agent/simulate_spectra.py run \\")
+        print(f"  python ../../data/bo_uvvis/simulate_spectra.py run \\")
         print(f"      --output_dir {spectra_dir} --params '{params_json}'")
     return 0
 

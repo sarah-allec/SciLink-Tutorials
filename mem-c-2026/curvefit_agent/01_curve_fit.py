@@ -17,12 +17,6 @@ Usage
     python 01_curve_fit.py --dataset raman_silicon
     python 01_curve_fit.py --data my_curve.csv --info "SQUID M-T of a Co-doped ZnO film"
     python 01_curve_fit.py --list                  # show the demo curves
-
-Group B domains: SQUID M-H / M-T magnetometry, SAXS/SANS profiles, UV-Vis / DLS, Monte-Carlo
-output. The presets below are proven demo curves (PL, Raman) so the example runs out of the
-box; on Day 2 swap in your own CSV (x,y columns) with --data and describe the sample with
---info. Each run writes to a timestamped folder curve_output/<dataset>/<timestamp>/, so every
-run is preserved (override with --output-dir).
 """
 
 from __future__ import annotations
@@ -34,8 +28,11 @@ import re
 import sys
 from datetime import datetime
 
+import scilink
+from scilink.agents.exp_agents.curve_fitting_agent import CurveFittingAgent
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "data")
+DATA = os.path.normpath(os.path.join(HERE, "..", "..", "data", "curves"))
 
 # dataset -> (curve CSV, metadata JSON). The metadata becomes the agent's `system_info`
 # (sample, technique, instrument settings) — it materially helps the model pick a sensible
@@ -94,9 +91,7 @@ def main() -> int:
     os.makedirs(out_dir, exist_ok=True)
 
     # Opt-in JSONL trace of every LLM call (model, prompt, response, tokens, latency).
-    import scilink
     scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
-    from scilink.agents.exp_agents.curve_fitting_agent import CurveFittingAgent
 
     print(f"\n📈 Curve fitting: {label}")
     print(f"   data: {csv}")
