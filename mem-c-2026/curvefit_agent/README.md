@@ -17,6 +17,8 @@ python 01_curve_fit.py --data my_curve.csv --info "SQUID M-T of a Co-doped ZnO f
 python 01_curve_fit.py --list                  # list demo curves
 ```
 
+> **Alternative interactive flow:** `scilink analyze --data data/mos2_pl.csv --metadata data/mos2_pl_metadata.json` — uses the higher-level orchestrator with a chat shell (same underlying agent + one extra routing LLM call upfront).
+
 ## What you get
 
 A timestamped folder under `curve_output/<dataset>/<timestamp>/` containing:
