@@ -100,11 +100,20 @@ export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 
 Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
-Quick check that your environment + credentials work:
+Quick check that your environment + credentials are set up (this only inspects env vars,
+it doesn't make an LLM call):
 
 ```bash
-python -c "from scilink.agents.planning_agents.bo_tools import get_optimizer; print('scilink OK')"
+python - <<'PY'
+import os, scilink, litellm
+model = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
+env = litellm.validate_environment(model)
+status = "READY" if env["keys_in_environment"] else f"MISSING {env['missing_keys']}"
+print(f"scilink OK | model={model} | credentials: {status}")
+PY
 ```
+
+If you see `MISSING [...]`, export the named env var (e.g. `ANTHROPIC_API_KEY`) and re-run.
 
 ### Troubleshooting
 
