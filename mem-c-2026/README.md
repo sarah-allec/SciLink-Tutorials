@@ -95,14 +95,6 @@ export OPENAI_API_KEY=...   ; export SCILINK_MODEL="gpt-4o"
 export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 ```
 
-Or skip the provider-specific variable entirely: set **`SCILINK_API_KEY`** to a key from *any*
-provider and SciLink uses it as a universal fallback — just pair it with the matching `SCILINK_MODEL`:
-
-```bash
-export SCILINK_API_KEY=...                          # a key from any provider
-export SCILINK_MODEL="claude-opus-4-6"             # provider inferred from the model name
-```
-
 > Only models SciLink can't auto-detect (e.g. Mistral, Cohere, Ollama, Azure, or an
 > OpenAI-compatible proxy) need an explicit `provider/model` prefix like `mistral/mistral-large`.
 
