@@ -1,9 +1,9 @@
 """
 Planning agent — knowledge-grounded TEA + experimental planning.
 
-Calls `PlanningAgent` directly (no orchestrator tool-loop): chains a
+Calls `PlanningAgent` to  chain a
 knowledge-grounded technoeconomic analysis with experimental-plan generation
-in two focused LLM steps. Predictable, no iteration cap, easy to script.
+in two focused LLM steps. 
 
 Default demo: produced-water ICP-MS analyzed against the DOE Critical
 Materials Assessment + PWS database, then a 96-well precipitation screen
@@ -33,8 +33,15 @@ _DATA_ROOT = os.path.normpath(os.path.join(HERE, "..", "..", "data", "planning_p
 DEFAULT_DATA_DIR = os.path.join(_DATA_ROOT, "experimental_data")
 DEFAULT_KNOWLEDGE_DIR = os.path.join(_DATA_ROOT, "knowledge_folder")
 DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
+# Embedding model for the planning agent's RAG knowledge base. Default is
+# Gemini (free key at https://aistudio.google.com/apikey). Override with
+# --embedding-model to route through your existing provider — e.g.
+# `bedrock/amazon.titan-embed-text-v2:0` (uses AWS_ACCESS_KEY_ID +
+# AWS_SECRET_ACCESS_KEY) or `openai/text-embedding-3-small` (uses
+# OPENAI_API_KEY).
+DEFAULT_EMBEDDING_MODEL = os.environ.get("SCILINK_EMBEDDING_MODEL", "gemini-embedding-001")
 
-# Two-step planning objectives (mirrors the mrs sample objectives).
+# Two-step planning objectives
 DEFAULT_TEA_OBJECTIVE = "Critical material recovery from produced water"
 
 DEFAULT_RESEARCH_OBJECTIVE = (
@@ -43,12 +50,8 @@ DEFAULT_RESEARCH_OBJECTIVE = (
     "the most promising material from the water sample. Use only reagents that are "
     "simple commodity chemicals. Identify a range of conditions (concentrations, "
     "ratios, solubilities, or other variables) for testing optimal recovery. Put "
-    "these conditions in a table for a 96-well plate (Opentrons). The experiment "
-    "should cover a wide range of conditions including the non-recovery regime, so "
-    "as to provide the most data. Rather than measure pH, estimate required amounts "
-    "of acid or base. Prefer additional conditions spread over the columns and rows "
-    "rather than replicate trials. Target a maximum 360 µL total volume, and prefer "
-    "to use concentrations at most 1 M. Provide corresponding Opentrons code."
+    "these conditions in a table for a 96-well plate (Opentrons). Provide corresponding "
+    "Opentrons code."
 )
 
 
@@ -78,6 +81,14 @@ def main() -> int:
                     help="Run only the TEA step; skip experimental plan generation.")
     ap.add_argument("--model", default=DEFAULT_MODEL,
                     help="LiteLLM model id (default: $SCILINK_MODEL).")
+    ap.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL,
+                    help="Embedding model for the RAG knowledge base "
+                         "(default: $SCILINK_EMBEDDING_MODEL or gemini-embedding-001). "
+                         "For Bedrock: 'bedrock/amazon.titan-embed-text-v2:0'.")
+    ap.add_argument("--embedding-api-key", default=None,
+                    help="Explicit API key for the embedding provider; usually "
+                         "discoverable from env (GEMINI_API_KEY, OPENAI_API_KEY, "
+                         "or AWS_ACCESS_KEY_ID for Bedrock).")
     args = ap.parse_args()
 
     out_dir = args.output_dir or os.path.join(
@@ -106,7 +117,12 @@ def main() -> int:
     print(f"   out dir      : {out_dir}")
     print(f"   mode         : {'TEA only' if args.tea_only else 'TEA + experimental plan'}\n")
 
-    agent = PlanningAgent(model_name=args.model, output_dir=out_dir)
+    agent = PlanningAgent(
+        model_name=args.model,
+        embedding_model=args.embedding_model,
+        embedding_api_key=args.embedding_api_key,
+        output_dir=out_dir,
+    )
 
     # --- Step 1: TEA ---
     print(f"💰 Step 1: technoeconomic analysis — {args.tea_objective!r}\n")

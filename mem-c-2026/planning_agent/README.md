@@ -18,6 +18,14 @@ python 01_plan.py --tea-only                   # TEA only (faster)
 python 01_plan.py --research-objective "..."   # your own plan-step goal
 ```
 
+> **Embedding model.** The RAG knowledge base needs a separate embedding
+> model — defaults to `gemini-embedding-001` (free key at
+> <https://aistudio.google.com/apikey>; set `GEMINI_API_KEY`). Override with
+> `--embedding-model` (or `$SCILINK_EMBEDDING_MODEL`) to route through your
+> existing provider — e.g. `bedrock/amazon.titan-embed-text-v2:0` (uses your
+> AWS creds, no extra key needed) or `openai/text-embedding-3-small` (uses
+> `OPENAI_API_KEY`).
+
 > **Alternative interactive flow with MCP/Opentrons tools:**
 > `scilink plan --autonomy autopilot --data-dir ../../data/planning_produced_water/experimental_data --knowledge-dir ../../data/planning_produced_water/knowledge_folder --mcp stdio:OpentronsAI:npx,mcp-remote,https://opentrons-opentronsai-mcp-server.hf.space/gradio_api/mcp/`
 > — uses the higher-level orchestrator in a chat shell; lets the agent call live Opentrons MCP tools alongside the standard plan-generation flow (the script above stays predictable / no MCP).

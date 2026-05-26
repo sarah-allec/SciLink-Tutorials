@@ -95,8 +95,20 @@ export OPENAI_API_KEY=...   ; export SCILINK_MODEL="gpt-4o"
 export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 ```
 
+Or with **AWS Bedrock** (one credential covers both Claude LLMs and Titan/Cohere
+embeddings — handy if your `planning_agent/` track uses a different embedding
+provider than the rest):
+
+```bash
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_REGION_NAME=us-east-1
+export SCILINK_MODEL="bedrock/anthropic.claude-opus-4-20250514-v1:0"
+```
+
 > Only models SciLink can't auto-detect (e.g. Mistral, Cohere, Ollama, Azure, or an
 > OpenAI-compatible proxy) need an explicit `provider/model` prefix like `mistral/mistral-large`.
+> Bedrock falls in this category — the `bedrock/...` prefix above is what routes through AWS.
 
 Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
