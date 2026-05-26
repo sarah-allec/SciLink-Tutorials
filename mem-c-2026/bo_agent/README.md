@@ -17,6 +17,8 @@ python 01_bo_uvvis.py --batch-size 3 --budget 5
 python 01_bo_uvvis.py --spectra ./my_runs --conditions ./my_runs/conditions.json
 ```
 
+> **Alternative interactive flow:** `scilink plan --autonomy autopilot --data-dir ../../mrs-2026/bo_agent/spectra` — uses the higher-level planning orchestrator with a chat shell (handles scalarization + BO + can chain knowledge queries on top, so it does more than this script).
+
 ## What you get
 
 A timestamped folder under `bo_output/<timestamp>/` containing:
