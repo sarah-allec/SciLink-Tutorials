@@ -28,6 +28,9 @@ import re
 import sys
 from datetime import datetime
 
+import scilink
+from scilink.agents.exp_agents.image_analysis_agent import ImageAnalysisAgent
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 
@@ -105,9 +108,7 @@ def main() -> int:
     # Opt-in JSONL trace of every LLM call (model, prompt, response, tokens, latency).
     # Lands in the run folder — useful for inspecting *what the agent actually asked the
     # model* after the fact (and what it cost in tokens / time).
-    import scilink
     scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
-    from scilink.agents.exp_agents.image_analysis_agent import ImageAnalysisAgent
 
     print(f"\n🔬 Image analysis: {label}")
     print(f"   image: {img}")
