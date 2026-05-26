@@ -1,33 +1,32 @@
 """
-Planning agent — knowledge-grounded experiment planning, programmatic mode.
+Planning agent — knowledge-grounded TEA + experimental planning.
 
-`PlanningOrchestratorAgent.run_task()` runs end-to-end (no user prompts) and
-returns a structured summary dict — good for scripted / notebook use. Same
-agent the `scilink plan` CLI invokes; this is the headless entry point.
+Calls `PlanningAgent` directly (no orchestrator tool-loop): chains a
+knowledge-grounded technoeconomic analysis with experimental-plan generation
+in two focused LLM steps. Predictable, no iteration cap, easy to script.
 
-Default demo: a technoeconomic analysis of produced-water ICP-MS data against
-the DOE Critical Materials Assessment + PWS database (see ./README.md).
+Default demo: produced-water ICP-MS analyzed against the DOE Critical
+Materials Assessment + PWS database, then a 96-well precipitation screen
+proposal with Opentrons code (see ./README.md).
 
 Usage
 -----
     export SCILINK_MODEL="claude-opus-4-6"          # see ../README.md
-    python 01_plan.py                                # default task
-    python 01_plan.py --task "..."                  # your own objective
-    python 01_plan.py --autonomy autopilot          # pause for human at decisions
+    python 01_plan.py                                # TEA + plan
+    python 01_plan.py --tea-only                     # TEA only (faster)
+    python 01_plan.py --research-objective "..."     # custom plan-step goal
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from datetime import datetime
 
 import scilink
-from scilink.agents.planning_agents.planning_orchestrator import (
-    PlanningOrchestratorAgent,
-    AutonomyLevel,
-)
+from scilink.agents.planning_agents.planning_agent import PlanningAgent
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 _DATA_ROOT = os.path.normpath(os.path.join(HERE, "..", "..", "data", "planning_produced_water"))
@@ -35,23 +34,22 @@ DEFAULT_DATA_DIR = os.path.join(_DATA_ROOT, "experimental_data")
 DEFAULT_KNOWLEDGE_DIR = os.path.join(_DATA_ROOT, "knowledge_folder")
 DEFAULT_MODEL = os.environ.get("SCILINK_MODEL", "claude-opus-4-6")
 
-# Default technoeconomic objective — analyzes the ICP-MS measurements against
-# the bundled DOE / PWS reference materials to surface candidates for recovery.
-DEFAULT_TASK = (
-    "Using the DOE assessment report, the PWS database, and the provided "
-    "criticality-matrix image as context, analyze the ICP-MS results to determine "
-    "which measured critical materials show concentrations that might be "
-    "economically interesting for recovery, considering their market value."
+# Two-step planning objectives (mirrors the mrs sample objectives).
+DEFAULT_TEA_OBJECTIVE = "Critical material recovery from produced water"
+
+DEFAULT_RESEARCH_OBJECTIVE = (
+    "Based on the ICP-MS results and the prior TEA identifying valuable materials, "
+    "propose a simple chemical process (like precipitation) to selectively recover "
+    "the most promising material from the water sample. Use only reagents that are "
+    "simple commodity chemicals. Identify a range of conditions (concentrations, "
+    "ratios, solubilities, or other variables) for testing optimal recovery. Put "
+    "these conditions in a table for a 96-well plate (Opentrons). The experiment "
+    "should cover a wide range of conditions including the non-recovery regime, so "
+    "as to provide the most data. Rather than measure pH, estimate required amounts "
+    "of acid or base. Prefer additional conditions spread over the columns and rows "
+    "rather than replicate trials. Target a maximum 360 µL total volume, and prefer "
+    "to use concentrations at most 1 M. Provide corresponding Opentrons code."
 )
-
-DEFAULT_OBJECTIVE = "Critical material recovery from produced water"
-
-# string → AutonomyLevel for the --autonomy flag.
-AUTONOMY = {
-    "co_pilot":   AutonomyLevel.CO_PILOT,
-    "autopilot":  AutonomyLevel.AUTOPILOT,
-    "autonomous": AutonomyLevel.AUTONOMOUS,
-}
 
 
 def _trunc(s: str, n: int) -> str:
@@ -59,20 +57,25 @@ def _trunc(s: str, n: int) -> str:
     return s if len(s) <= n else s[:n] + "..."
 
 
+def _format_tea_context(tea: dict) -> str:
+    """Compact JSON summary of TEA results, injected as `additional_context`."""
+    return _trunc(json.dumps(tea, indent=2, default=str), 8000)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--task", default=DEFAULT_TASK,
-                    help="Free-text objective the agent should pursue (default: technoeconomic ICP-MS analysis).")
-    ap.add_argument("--objective", default=DEFAULT_OBJECTIVE,
-                    help="High-level campaign label for this run (shown in the orchestrator's logs / state).")
+    ap.add_argument("--tea-objective", default=DEFAULT_TEA_OBJECTIVE,
+                    help="One-line economic objective (default: critical-material recovery).")
+    ap.add_argument("--research-objective", default=DEFAULT_RESEARCH_OBJECTIVE,
+                    help="Free-text experimental-planning goal (default: 96-well precipitation screen with Opentrons code).")
     ap.add_argument("--data-dir", default=DEFAULT_DATA_DIR,
-                    help="Folder of experimental measurements (default: ./experimental_data/).")
+                    help="Folder of experimental measurements (default: bundled produced-water ICP-MS).")
     ap.add_argument("--knowledge-dir", default=DEFAULT_KNOWLEDGE_DIR,
-                    help="Folder of reference knowledge — PDFs, spreadsheets, images (default: ./knowledge_folder/).")
+                    help="Folder of reference knowledge — PDFs, spreadsheets, images (default: DOE/PWS bundle).")
     ap.add_argument("--output-dir", default=None,
                     help="Where to write campaign artifacts (default: plan_output/<timestamp>/).")
-    ap.add_argument("--autonomy", default="autonomous", choices=sorted(AUTONOMY),
-                    help="Autonomy level (default: autonomous — runs end-to-end with no human prompts).")
+    ap.add_argument("--tea-only", action="store_true",
+                    help="Run only the TEA step; skip experimental plan generation.")
     ap.add_argument("--model", default=DEFAULT_MODEL,
                     help="LiteLLM model id (default: $SCILINK_MODEL).")
     args = ap.parse_args()
@@ -82,58 +85,72 @@ def main() -> int:
     os.makedirs(out_dir, exist_ok=True)
     scilink.enable_tracing(os.path.join(out_dir, "llm_trace.jsonl"))
 
-    print(f"\n🧭 Planning campaign: {args.objective}")
+    # Resolve the primary ICP-MS dataset + the criticality-matrix image (if present).
+    icpms = os.path.join(args.data_dir, "prowater_icpms.xlsx")
+    icpms_meta = os.path.join(args.data_dir, "prowater_icpms.json")
+    crit_img = os.path.join(args.knowledge_dir, "criticality_matrix.jpg")
+
+    primary_dataset = {"file_path": icpms}
+    if os.path.isfile(icpms_meta):
+        primary_dataset["metadata_path"] = icpms_meta
+
+    images, image_descs = [], []
+    if os.path.isfile(crit_img):
+        images.append(crit_img)
+        image_descs.append("DOE criticality matrix — supply risk vs. importance for critical materials.")
+
+    print(f"\n🧭 Planning campaign")
     print(f"   model        : {args.model}")
     print(f"   data dir     : {args.data_dir}")
     print(f"   knowledge dir: {args.knowledge_dir}")
     print(f"   out dir      : {out_dir}")
-    print(f"   autonomy     : {args.autonomy}\n")
+    print(f"   mode         : {'TEA only' if args.tea_only else 'TEA + experimental plan'}\n")
 
-    orch = PlanningOrchestratorAgent(
-        objective=args.objective,
-        base_dir=out_dir,
-        model_name=args.model,
-        autonomy_level=AUTONOMY[args.autonomy],
-        data_dir=args.data_dir,
-        knowledge_dir=args.knowledge_dir,
+    agent = PlanningAgent(model_name=args.model, output_dir=out_dir)
+
+    # --- Step 1: TEA ---
+    print(f"💰 Step 1: technoeconomic analysis — {args.tea_objective!r}\n")
+    tea = agent.perform_technoeconomic_analysis(
+        objective=args.tea_objective,
+        knowledge_paths=[args.knowledge_dir],
+        primary_data_set=primary_dataset,
+        image_paths=images or None,
+        image_descriptions=image_descs or None,
+        output_json_path=os.path.join(out_dir, "tea_analysis.json"),
     )
+    print(f"  ✅ TEA done — tea_analysis.json (+ .html report)\n")
 
-    result = orch.run_task(args.task)
+    plan = None
+    if not args.tea_only:
+        # --- Step 2: experimental plan, conditioned on TEA results ---
+        print(f"🧪 Step 2: experimental plan (using TEA findings as additional context)\n")
+        plan = agent.propose_experiments(
+            objective=args.research_objective,
+            knowledge_paths=[args.knowledge_dir],
+            primary_data_set=primary_dataset,
+            additional_context={"Prior TEA findings": _format_tea_context(tea)},
+            enable_human_feedback=False,
+            output_json_path=os.path.join(out_dir, "plan.json"),
+        )
+        print(f"  ✅ plan done — plan.json\n")
 
-    # `result` keys we surface below:
-    #   status              'success' | 'error'
-    #   summary             the agent's final reply (the report)
-    #   files_produced      absolute paths of campaign artifacts created
-    #   key_findings        campaign-state highlights (objective, targets, ...)
-    #   suggested_followups list of next-step suggestions
-    #   warnings            any non-fatal issues encountered
-    print("\n=== RESULT ===")
-    print(f"status     : {result.get('status')}")
-    files = result.get("files_produced") or []
-    print(f"files      : {len(files)} produced")
-    for f in files[:6]:
-        print(f"   - {f}")
-    if len(files) > 6:
-        print(f"   ... ({len(files) - 6} more)")
-    findings = result.get("key_findings") or []
-    if findings:
-        print(f"findings   : {len(findings)}")
-        for i, f in enumerate(findings[:3], 1):
-            print(f"   [{i}] {_trunc(str(f), 200)}")
-    followups = result.get("suggested_followups") or []
-    if followups:
-        print(f"\nsuggested follow-ups:")
-        for fu in followups[:3]:
-            print(f"   - {_trunc(str(fu), 200)}")
-    warnings = result.get("warnings") or []
-    if warnings:
-        print(f"\nwarnings:")
-        for w in warnings[:3]:
-            print(f"   ⚠️  {_trunc(str(w), 200)}")
-    summary = result.get("summary") or ""
-    if summary:
-        print(f"\nsummary (first ~600 chars):\n{_trunc(summary, 600)}")
-    print(f"\nArtifacts (sessions, scripts, traces) in: {out_dir}/")
+    # --- Report ---
+    print("=== RESULT ===")
+    if isinstance(tea, dict):
+        print(f"TEA      : status={tea.get('status', 'n/a')}")
+        for key in ("executive_summary", "summary", "key_findings"):
+            v = tea.get(key)
+            if v:
+                print(f"  {key}: {_trunc(str(v), 400)}")
+                break
+    if plan is not None and isinstance(plan, dict):
+        n_exp = len(plan.get("proposed_experiments") or [])
+        print(f"Plan     : {n_exp} proposed experiment(s)")
+        for i, exp in enumerate((plan.get("proposed_experiments") or [])[:3], 1):
+            if isinstance(exp, dict):
+                h = exp.get("hypothesis") or exp.get("title") or str(exp)[:200]
+                print(f"  [{i}] {_trunc(str(h), 200)}")
+    print(f"\nArtifacts (TEA JSON + HTML, plan JSON, traces) in: {out_dir}/")
     return 0
 
 

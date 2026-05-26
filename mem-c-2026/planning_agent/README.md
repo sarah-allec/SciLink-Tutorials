@@ -1,34 +1,42 @@
 # Planning agent — knowledge-grounded experiment planning
 
-SciLink's `plan` mode runs an interactive planning orchestrator that combines
-your experimental measurements (`data_dir`) with reference knowledge
-(`knowledge_folder` — PDFs, spreadsheets, images) to reason about what to do
-next: technoeconomic analyses, knowledge-grounded literature queries,
-recommended next experiments, even full Opentrons / well-plate protocols.
+SciLink's `PlanningAgent` chains a **knowledge-grounded technoeconomic analysis**
+with **experimental-plan generation** in two focused LLM steps. This is the
+"I have measurements + reference knowledge — tell me what's worth pursuing
+and how to test it" shape.
+
+The bundled demo combines produced-water ICP-MS data with the DOE Critical
+Materials Assessment + PWS database to identify recoverable elements and
+propose a 96-well precipitation screen (with Opentrons code).
 
 ## Quick start
 
 ```bash
 export SCILINK_MODEL="claude-opus-4-6"   # see ../README.md for credentials
-python 01_plan.py                              # default technoeconomic ICP-MS task
-python 01_plan.py --task "..."                 # your own objective
-python 01_plan.py --autonomy autopilot         # pause for human review at decisions
+python 01_plan.py                              # TEA + plan
+python 01_plan.py --tea-only                   # TEA only (faster)
+python 01_plan.py --research-objective "..."   # your own plan-step goal
 ```
 
-> **Alternative interactive flow:** `scilink plan --autonomy autopilot --data-dir ../../data/planning_produced_water/experimental_data --knowledge-dir ../../data/planning_produced_water/knowledge_folder` — same orchestrator as `01_plan.py`, just launched via the chat-shell CLI instead of one-shot Python.
+> **Alternative interactive flow with MCP/Opentrons tools:**
+> `scilink plan --autonomy autopilot --data-dir ../../data/planning_produced_water/experimental_data --knowledge-dir ../../data/planning_produced_water/knowledge_folder --mcp stdio:OpentronsAI:npx,mcp-remote,https://opentrons-opentronsai-mcp-server.hf.space/gradio_api/mcp/`
+> — uses the higher-level orchestrator in a chat shell; lets the agent call live Opentrons MCP tools alongside the standard plan-generation flow (the script above stays predictable / no MCP).
 
 ## What you get
 
 A timestamped folder under `plan_output/<timestamp>/` containing:
 
-- Campaign artifacts (knowledge-query scripts, scalarizer outputs, generated
-  protocols, planning-session state).
-- The agent's final report / summary.
+- `tea_analysis.json` — TEA results (cost breakdowns, market analysis, viability).
+- `tea_analysis.json.html` — rendered TEA report.
+- `plan.json` — proposed experiments (hypotheses, steps, justifications,
+  expected outcomes; includes Opentrons code when the research objective
+  asks for it).
 - `llm_trace.jsonl` — every LLM call (model, prompt, response, tokens, latency).
 
 ## The demo data
 
-The bundled data (under [`../../data/planning_produced_water/`](../../data/planning_produced_water/))
+The bundled data (under
+[`../../data/planning_produced_water/`](../../data/planning_produced_water/))
 lets the agent do a technoeconomic analysis of produced water:
 
 - `experimental_data/prowater_icpms.{xlsx,json}` — ICP-MS measurements on
@@ -38,18 +46,13 @@ lets the agent do a technoeconomic analysis of produced water:
 - `knowledge_folder/PWSdatabase.{xlsx,json}` — Public Water Systems contaminant
   database.
 - `knowledge_folder/criticality_matrix.jpg` — DOE supply-risk × importance
-  matrix image.
-
-The default task in `01_plan.py`:
-
-> Using the DOE assessment report, the PWS database, and the provided
-> criticality-matrix image as context, analyze the ICP-MS results to determine
-> which measured critical materials show concentrations that might be
-> economically interesting for recovery, considering their market value.
+  matrix image (passed to the multimodal LLM).
 
 ## Bring on Day 2
 
 - Your own measurements (CSV / XLSX / JSON) — point `--data-dir` at them.
 - Reference knowledge (PDFs, databases, images) — point `--knowledge-dir` at them.
-- Edit the task string in `01_plan.py` (or pass `--task "..."` from the
-  command line) to describe what you want the agent to do.
+- Edit `DEFAULT_TEA_OBJECTIVE` / `DEFAULT_RESEARCH_OBJECTIVE` in `01_plan.py`
+  (or pass `--tea-objective` / `--research-objective` from the command line).
+- For live tool integration (Opentrons protocol generation via MCP, etc.),
+  use the `scilink plan --mcp …` CLI flow shown above instead.
