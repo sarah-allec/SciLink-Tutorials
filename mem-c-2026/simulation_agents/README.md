@@ -81,7 +81,7 @@ on HPC.
 > Quantum ESPRESSO note — after `pw.in` is generated, set your `pseudo_dir` and the
 > `ATOMIC_SPECIES` UPF paths for your pseudopotential library before running `pw.x`.
 
-> Requires SciLink ≥ 0.0.31 for the `qe` skill bundle (added via PR #198).
+> The `qe` skill bundle ships in SciLink ≥ 0.0.31; the workshop pin is well past this.
 
 ## Part 2 — active-learning DFT screening
 

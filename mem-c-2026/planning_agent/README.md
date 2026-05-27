@@ -22,8 +22,7 @@ python 01_plan.py --research-objective "..."   # your own plan-step goal
 > model — defaults to `gemini-embedding-001` (free key at
 > <https://aistudio.google.com/apikey>; set `GEMINI_API_KEY`). Override with
 > `--embedding-model` (or `$SCILINK_EMBEDDING_MODEL`) to route through your
-> existing provider — e.g. `bedrock/amazon.titan-embed-text-v2:0` (uses your
-> AWS creds, no extra key needed) or `openai/text-embedding-3-small` (uses
+> existing provider — e.g. `openai/text-embedding-3-small` (uses
 > `OPENAI_API_KEY`).
 
 > **Alternative interactive flow with MCP/Opentrons tools:**

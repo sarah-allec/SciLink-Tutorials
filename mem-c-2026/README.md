@@ -13,7 +13,8 @@ hackathon groups:
 | [`analysis_agent/`](analysis_agent/) | **A — Image Analysis** | `analyze` | Segment / interpret SEM, STEM, and AFM images |
 | [`curvefit_agent/`](curvefit_agent/) | **B — Curve Fitting** | `analyze` | Fit SQUID, SAXS/SANS, UV-Vis curves and extract parameters |
 | [`bo_agent/`](bo_agent/) | **C — Bayesian Optimization** | `plan` | Drive closed-loop synthesis optimization |
-| [`simulation_agents/`](simulation_agents/) | **D — DFT / Simulation** | `simulate` | Build defect supercells, generate VASP inputs, run an active-learning DFT loop |
+| [`simulation_agents/`](simulation_agents/) | **D — DFT / Simulation** | `simulate` | Build defect supercells, generate VASP or Quantum ESPRESSO inputs, run an active-learning DFT loop |
+| [`planning_agent/`](planning_agent/) | **Bonus** | `plan` | Knowledge-grounded TEA + experimental planning (e.g. critical-material recovery from produced water) |
 
 > **Heads up if your work is simulation-first:** even if your group is A or B, the
 > [`simulation_agents/`](simulation_agents/) track is the closest fit to day-to-day computational
@@ -43,12 +44,12 @@ the Extensions sidebar.
 ### 2. Install Miniconda
 
 A lightweight Python environment manager: <https://docs.anaconda.com/miniconda/install/>. Then
-create the workshop environment:
+create the workshop environment (SciLink itself is installed on Day 1 with the pinned
+version you'll be given):
 
 ```bash
 conda create -n scilink python=3.12 -y
 conda activate scilink
-pip install 'scilink[sim]' # or pip install 'scilink[sim,ui]' to use the ui
 ```
 
 ### 3. Install dependencies
@@ -95,20 +96,8 @@ export OPENAI_API_KEY=...   ; export SCILINK_MODEL="gpt-4o"
 export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 ```
 
-Or with **AWS Bedrock** (one credential covers both Claude LLMs and Titan/Cohere
-embeddings — handy if your `planning_agent/` track uses a different embedding
-provider than the rest):
-
-```bash
-export AWS_ACCESS_KEY_ID=...
-export AWS_SECRET_ACCESS_KEY=...
-export AWS_REGION_NAME=us-east-1
-export SCILINK_MODEL="bedrock/anthropic.claude-opus-4-20250514-v1:0"
-```
-
 > Only models SciLink can't auto-detect (e.g. Mistral, Cohere, Ollama, Azure, or an
 > OpenAI-compatible proxy) need an explicit `provider/model` prefix like `mistral/mistral-large`.
-> Bedrock falls in this category — the `bedrock/...` prefix above is what routes through AWS.
 
 Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
