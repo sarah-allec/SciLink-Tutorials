@@ -4,16 +4,15 @@ For **Group D** and any of the strongly computational fellows
  whose work is simulation-first.
 
 SciLink's `simulate` mode turns a natural-language description of a material into a
-built, validated structure and ready-to-run VASP inputs, with a self-refinement loop
-around the actual engine run. This track has three parts:
+built, validated structure and ready-to-run DFT inputs, with a self-refinement loop
+around the structure generator. This track has two parts:
 
 | Script | What it shows | Needs |
 |---|---|---|
-| `01_dft_defect.py` | One agent call: defect description → structure → **VASP inputs** | credentials; **no cluster** |
+| `01_dft.py` | One agent-driven pipeline: structure description → built/validated structure → **VASP or QE inputs** (engine flag) | credentials; **no cluster** |
 | `02_active_learning_dft.py` | An **active-learning loop** that uses a GP surrogate to choose which DFT calc to run next | runs offline in `--mock`; credentials only for `--dft` |
-| `03_qe_inputs.py` | Same idea as Part 1 but for **Quantum ESPRESSO** (`pw.x`) — for fellows without VASP access | credentials; **no cluster** |
 
-All three are themed around **In-doped wurtzite ZnO** point defects — a system shared
+Both are themed around **In-doped wurtzite ZnO** point defects — a system shared
 across the cohort (In:ZnO synthesis, ZnO microscopy, defect/dopant DFT) — but every
 request is free text, so you can retarget them to your own system in one line (a preset
 for a Yb-doped MOF node is also included).
@@ -22,12 +21,11 @@ for a Yb-doped MOF node is also included).
 
 ```
 simulation_agents/
-├── 01_dft_defect.py          # Part 1 — single structure → VASP inputs
+├── 01_dft.py                 # Part 1 — structure + VASP|QE inputs
 ├── 02_active_learning_dft.py # Part 2 — BO-driven DFT screening loop
-├── 03_qe_inputs.py           # Part 3 — Quantum ESPRESSO companion to Part 1
 ├── al_objective.py           # design space + (mock) formation-energy surface
 └── data/
-    └── seed_configs.csv       # 8 example "DFT" points to start the surrogate
+    └── seed_configs.csv      # 8 example "DFT" points to start the surrogate
 ```
 
 ## Setup
@@ -42,32 +40,48 @@ The Bayesian-optimization core (`scilink.agents.planning_agents.bo_tools.get_opt
 makes **no LLM calls**, so Part 2 in `--mock` mode runs with no credentials at all — a good
 first thing to run on Day 1.
 
-## Part 1 — generate a calculation
+## Part 1 — generate a calculation (VASP or QE)
 
-`01_dft_defect.py` turns a natural-language description of a structure into VASP inputs. You
-describe the structure in **one of two ways** — both feed the same agent, they just differ in
-where the text comes from:
+`01_dft.py` turns a natural-language description of a structure into ready-to-run DFT
+inputs. The engine is selected with `--engine vasp|qe` (default: VASP); everything else
+about the agent flow is identical between engines.
 
-- **`--system <name>`** — use a built-in **preset** (vetted, cohort-relevant). Run `--list` to
-  see them: `zno_in`, `zno_in_ovac` (default), `zno_n_sub`, `mof_yb_node`.
-- **`--request "<text>"`** — supply your **own free-text** description of any structure. If you
-  pass both, `--request` wins.
+You describe the structure in **one of three ways** — all feed the same agent, they
+just differ in where the description comes from:
+
+- **`--system <name>`** — use a built-in **preset** (vetted, cohort-relevant). Run `--list`
+  to see them: `zno_in`, `zno_in_ovac` (default), `zno_n_sub`, `mof_yb_node`.
+- **`--request "<text>"`** — supply your **own free-text** description of any structure. If
+  you pass both, `--request` wins.
+- **`--structure <file>`** — skip structure generation entirely and use an existing
+  POSCAR / CIF / xyz (e.g. one from a previous run, or one you built by hand).
 
 ```bash
-python 01_dft_defect.py --list                 # show the preset systems
-python 01_dft_defect.py --system zno_in_ovac   # a preset: In:ZnO with an O vacancy
-python 01_dft_defect.py --request "5x5 MoS2 monolayer, 2H phase, with one S vacancy"
+python 01_dft.py --list                                      # show preset systems
+python 01_dft.py --system zno_in_ovac                        # preset → VASP
+python 01_dft.py --system zno_in_ovac --engine qe            # same structure → QE
+python 01_dft.py --request "5x5 MoS2 monolayer, 2H phase, with one S vacancy"
+python 01_dft.py --structure dft_output/zno_in_ovac/vasp/<ts>/POSCAR --engine qe
 ```
 
-Either way it writes `POSCAR`/`INCAR`/`KPOINTS` into a timestamped folder
-`dft_output/<system-or-request>/<YYYYMMDD_HHMMSS>/`, so every run is preserved — handy for model
-comparisons and variability tests. Override the path entirely with `--output-dir`. Each run folder
-also gets an `llm_trace.jsonl` — every LLM call (model, prompt, response, token usage, latency).
-The agent builds the structure with an ASE script, validates it, and auto-refines if the script
-errors (up to `--max-cycles`). You then run VASP on HPC.
+Each run writes to a timestamped folder
+`dft_output/<system-or-request>/<engine>/<timestamp>/` so every run is preserved — handy
+for model comparisons and variability tests. Override the path entirely with
+`--output-dir`. Each run folder also gets an `llm_trace.jsonl` — every LLM call (model,
+prompt, response, token usage, latency).
 
-> 💡 On Day 2, the quickest path to your own system is `--request "..."`; if you'll reuse it,
-> add a named entry to the `PRESETS` dict at the top of `01_dft_defect.py`.
+For VASP runs the folder contains `POSCAR` / `INCAR` / `KPOINTS`; for QE it contains a
+`pw.in`. The agent builds the structure with an ASE script, validates it, and
+auto-refines if the script errors (up to `--max-cycles`). You then run the calculation
+on HPC.
+
+> 💡 On Day 2, the quickest path to your own system is `--request "..."`; if you'll
+> reuse it, add a named entry to the `PRESETS` dict at the top of `01_dft.py`.
+
+> Quantum ESPRESSO note — after `pw.in` is generated, set your `pseudo_dir` and the
+> `ATOMIC_SPECIES` UPF paths for your pseudopotential library before running `pw.x`.
+
+> Requires SciLink ≥ 0.0.31 for the `qe` skill bundle (added via PR #198).
 
 ## Part 2 — active-learning DFT screening
 
@@ -90,27 +104,14 @@ hook is marked in `evaluate_with_dft()`. In `--dft` mode each campaign writes in
 timestamped `al_dft_runs/<YYYYMMDD_HHMMSS>/` so re-runs don't overwrite each other, with a
 per-campaign `llm_trace.jsonl` alongside.
 
-## Part 3 — Quantum ESPRESSO companion
-
-`03_qe_inputs.py` is the same idea as Part 1, but it emits Quantum ESPRESSO (`pw.x`) inputs
-instead of VASP — for fellows whose group uses QE or has no VASP license. Structure generation
-is engine-agnostic, so reuse a POSCAR produced by Part 1 (or any POSCAR / CIF / xyz) and this
-script wraps it through SciLink's `periodic_dft` agent with the `qe` skill bundle.
-
-```bash
-python 03_qe_inputs.py --structure dft_output/zno_in_ovac/<timestamp>/POSCAR
-python 03_qe_inputs.py --structure my.cif --request "vc-relax of a metal, PBE"
-```
-
-Writes a `pw.in` into `qe_output/<structure>/<timestamp>/`. Set your `pseudo_dir` and the
-`ATOMIC_SPECIES` UPF paths for your pseudopotential library before running `pw.x`.
-
-> Requires SciLink ≥ 0.0.31 (the `qe` skill bundle was added via PR #198).
-
 ## Make it yours (Day 2)
 
-- **New system:** edit the `PRESETS` dict in `01_dft_defect.py`, or pass `--request`.
-- **New design space:** edit `DESIGN_VARIABLES` in `al_objective.py` (e.g., swap In→Yb for
-  the MOF work, or add a second dopant). `INPUT_COLS`/`INPUT_BOUNDS` update automatically.
-- **Your own seed data:** replace `data/seed_configs.csv` with your real DFT results (same
-  columns) and start the surrogate from genuine calculations.
+- **New system:** edit the `PRESETS` dict in `01_dft.py`, or pass `--request`.
+- **Switch engines:** add `--engine qe` (or `vasp`) to any of the commands above.
+- **Reuse a structure:** pass `--structure path/to/POSCAR` to feed an existing
+  structure into the input-generation step (any POSCAR / CIF / xyz works).
+- **New design space (Part 2):** edit `DESIGN_VARIABLES` in `al_objective.py` (e.g., swap
+  In→Yb for the MOF work, or add a second dopant). `INPUT_COLS`/`INPUT_BOUNDS` update
+  automatically.
+- **Your own seed data (Part 2):** replace `data/seed_configs.csv` with your real DFT
+  results (same columns) and start the surrogate from genuine calculations.

@@ -137,7 +137,7 @@ If you see `MISSING [...]`, export the named env var (e.g. `ANTHROPIC_API_KEY`) 
 
 Each track folder has its own `README.md` with step-by-step instructions. Recommended Day-1 order:
 
-1. `simulation_agents/` — start with `01_dft_defect.py` (no cluster needed; generates inputs only)
+1. `simulation_agents/` — start with `01_dft.py` (no cluster needed; generates inputs only — VASP by default, `--engine qe` for Quantum ESPRESSO)
 2. your group's track (`analysis_agent/`, `curvefit_agent/`, or `bo_agent/`)
 
 The active-learning loop in `simulation_agents/02_active_learning_dft.py` runs **fully offline**
