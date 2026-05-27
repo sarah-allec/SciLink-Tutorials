@@ -18,12 +18,13 @@ python 01_plan.py --tea-only                   # TEA only (faster)
 python 01_plan.py --research-objective "..."   # your own plan-step goal
 ```
 
-> **Embedding model.** The RAG knowledge base needs a separate embedding
-> model — defaults to `gemini-embedding-001` (free key at
-> <https://aistudio.google.com/apikey>; set `GEMINI_API_KEY`). Override with
-> `--embedding-model` (or `$SCILINK_EMBEDDING_MODEL`) to route through your
-> existing provider — e.g. `openai/text-embedding-3-small` (uses
-> `OPENAI_API_KEY`).
+> **Embedding model — needs its own key.** The RAG knowledge base uses an
+> embedding model that's separate from the LLM; default is `gemini-embedding-001`,
+> so set `GEMINI_API_KEY` (free at <https://aistudio.google.com/apikey>) **in
+> addition to** your LLM provider key (e.g. `ANTHROPIC_API_KEY` for
+> `claude-opus-4-6`). To stay on a single provider, override with
+> `--embedding-model` (or `$SCILINK_EMBEDDING_MODEL`) — e.g.
+> `openai/text-embedding-3-small` (uses `OPENAI_API_KEY`).
 
 > **Alternative interactive flow with MCP/Opentrons tools:**
 > `scilink plan --autonomy autopilot --data-dir ../../data/planning_produced_water/experimental_data --knowledge-dir ../../data/planning_produced_water/knowledge_folder --mcp stdio:OpentronsAI:npx,mcp-remote,https://opentrons-opentronsai-mcp-server.hf.space/gradio_api/mcp/`

@@ -37,9 +37,9 @@ API key are provided on Day 1, so you only need the prerequisites below now.
 
 ### 1. Install VS Code
 
-The recommended editor (integrated terminal, Python debugging, Jupyter):
-<https://code.visualstudio.com/download>. Then add the **Python** and **Jupyter** extensions from
-the Extensions sidebar.
+The recommended editor (integrated terminal, Python debugging):
+<https://code.visualstudio.com/download>. Then add the **Python** extension from the
+Extensions sidebar.
 
 ### 2. Install Miniconda
 
@@ -98,6 +98,14 @@ export GEMINI_API_KEY=...   ; export SCILINK_MODEL="gemini-2.5-pro"
 
 > Only models SciLink can't auto-detect (e.g. Mistral, Cohere, Ollama, Azure, or an
 > OpenAI-compatible proxy) need an explicit `provider/model` prefix like `mistral/mistral-large`.
+
+> **Bonus `planning_agent/` track needs two keys.** Its RAG knowledge base uses a
+> Gemini embedding model (`gemini-embedding-001`) in addition to whatever LLM
+> you've configured above, so you'll need a `GEMINI_API_KEY` (free at
+> <https://aistudio.google.com/apikey>) **alongside** your LLM provider key (e.g.
+> `ANTHROPIC_API_KEY` for `claude-opus-4-6`). See
+> [`planning_agent/README.md`](planning_agent/README.md) for how to swap the
+> embedding model if you'd rather stay on a single provider.
 
 Every script here reads the model from `SCILINK_MODEL`, so you only set it once.
 
