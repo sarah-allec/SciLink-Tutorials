@@ -152,22 +152,36 @@ def main() -> int:
 
     # --- Report ---
     print("=== RESULT ===")
-    if isinstance(tea, dict):
-        print(f"TEA      : status={tea.get('status', 'n/a')}")
-        for key in ("executive_summary", "summary", "key_findings"):
-            v = tea.get(key)
-            if v:
-                print(f"  {key}: {_trunc(str(v), 400)}")
-                break
-    if plan is not None and isinstance(plan, dict):
-        n_exp = len(plan.get("proposed_experiments") or [])
-        print(f"Plan     : {n_exp} proposed experiment(s)")
-        for i, exp in enumerate((plan.get("proposed_experiments") or [])[:3], 1):
+    exit_code = 0
+
+    # TEA: the analysis lives nested under 'technoeconomic_assessment'; the
+    # agent emits an `error` payload at top level instead when it fails.
+    if isinstance(tea, dict) and tea.get("error"):
+        print(f"TEA      : ❌ ERROR — {_trunc(str(tea['error']), 400)}")
+        exit_code = 1
+    elif isinstance(tea, dict):
+        body = tea.get("technoeconomic_assessment") or {}
+        print(f"TEA      : stage={tea.get('stage', 'n/a')}")
+        if body.get("summary"):
+            print(f"  summary: {_trunc(str(body['summary']), 400)}")
+
+    # Plan: agent writes an `error` payload (e.g. JSON-parse failure) instead
+    # of `proposed_experiments` when generation fails — surface it explicitly
+    # rather than silently rendering "0 experiments".
+    if isinstance(plan, dict) and plan.get("error"):
+        print(f"Plan     : ❌ ERROR — {_trunc(str(plan['error']), 400)}")
+        print(f"           (often transient — rerun usually clears LLM JSON-formatting failures)")
+        exit_code = 1
+    elif isinstance(plan, dict):
+        experiments = plan.get("proposed_experiments") or []
+        print(f"Plan     : {len(experiments)} proposed experiment(s)")
+        for i, exp in enumerate(experiments[:3], 1):
             if isinstance(exp, dict):
                 h = exp.get("hypothesis") or exp.get("title") or str(exp)[:200]
                 print(f"  [{i}] {_trunc(str(h), 200)}")
+
     print(f"\nArtifacts (TEA JSON + HTML, plan JSON, traces) in: {out_dir}/")
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":
